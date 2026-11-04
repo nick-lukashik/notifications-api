@@ -111,7 +111,7 @@ export class EventsConsumer implements OnApplicationBootstrap {
                         key: `receipt:${event.payload.paymentId}`,
                         template: 'receipt',
                         userId: event.payload.userId,
-                        grm: event.payload.grm,
+                        coins: event.payload.coins,
                         amount: event.payload.amount,
                         currency: event.payload.currency,
                     })

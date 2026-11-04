@@ -110,7 +110,7 @@ describe('events and the inbox', () => {
         const event = envelope('wallet.credit.posted.v1', 'wallet', {
             txId: randomUUID(),
             userId,
-            unit: 'GRM',
+            unit: 'COIN',
             amount: '500',
             balanceAfter: '500',
             source: 'pay',
@@ -160,9 +160,9 @@ describe('events and the inbox', () => {
             envelope('pay.payment.succeeded.v1', 'pay', {
                 paymentId,
                 userId,
-                productKey: 'grm-500',
-                grm: '500',
-                amount: '449',
+                productKey: 'coins-550',
+                coins: '550',
+                amount: '500',
                 currency: 'RUB',
                 provider: 'fake',
                 paidAt: new Date().toISOString(),
@@ -179,7 +179,7 @@ describe('events and the inbox', () => {
         await t.app.get(EmailJobs).send(job?.data as never)
         const receipt = t.mail.sent.at(-1)
         expect(receipt?.to).toBe('buyer@example.com')
-        expect(receipt?.subject).toBe('Payment received: 500 GRM')
+        expect(receipt?.subject).toBe('Payment received: 550 coins')
     })
 
     it('refuses the inbox without a valid token', async () => {

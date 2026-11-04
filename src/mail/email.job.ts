@@ -22,7 +22,7 @@ export type EmailJob =
           key: string
           template: 'receipt'
           userId: string
-          grm: string
+          coins: string
           amount: string
           currency: string
       }
@@ -86,7 +86,7 @@ export class EmailJobs implements OnModuleInit, OnApplicationBootstrap {
                       idWebUrl: this.config.idWebUrl,
                   })
                 : render('receipt', user.locale, {
-                      grm: job.grm,
+                      coins: job.coins,
                       amount: job.amount,
                       currency: job.currency,
                       idWebUrl: this.config.idWebUrl,

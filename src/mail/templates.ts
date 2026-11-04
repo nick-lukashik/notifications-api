@@ -14,13 +14,30 @@ type Templates = {
         idWebUrl: string
     }
     receipt: {
-        grm: string
+        coins: string
         amount: string
         currency: string
         idWebUrl: string
     }
 }
 export type TemplateKey = keyof Templates
+
+const ruPlural = new Intl.PluralRules('ru')
+const enPlural = new Intl.PluralRules('en')
+
+/** "1 coin", "550 coins"; "1 монета", "2 монеты", "550 монет". */
+export function coinsText(amount: string, locale: Locale): string {
+    const count = Number(amount)
+    if (locale === 'ru') {
+        const word = {
+            one: 'монета',
+            few: 'монеты',
+            many: 'монет',
+        }[ruPlural.select(count) as 'one' | 'few' | 'many']
+        return `${amount} ${word ?? 'монеты'}`
+    }
+    return `${amount} ${enPlural.select(count) === 'one' ? 'coin' : 'coins'}`
+}
 
 const text: {
     [K in TemplateKey]: Record<Locale, (params: Templates[K]) => Rendered>
@@ -46,13 +63,13 @@ const text: {
         }),
     },
     receipt: {
-        en: ({ grm, amount, currency, idWebUrl }) => ({
-            subject: `Payment received: ${grm} GRM`,
-            text: `We received ${amount} ${currency}. ${grm} GRM are on your wallet: ${idWebUrl}/wallet`,
+        en: ({ coins, amount, currency, idWebUrl }) => ({
+            subject: `Payment received: ${coinsText(coins, 'en')}`,
+            text: `We received ${amount} ${currency}. ${coinsText(coins, 'en')} are on your wallet: ${idWebUrl}/wallet`,
         }),
-        ru: ({ grm, amount, currency, idWebUrl }) => ({
-            subject: `Оплата получена: ${grm} GRM`,
-            text: `Мы получили ${amount} ${currency}. ${grm} GRM зачислены на кошелёк: ${idWebUrl}/wallet`,
+        ru: ({ coins, amount, currency, idWebUrl }) => ({
+            subject: `Оплата получена: ${coinsText(coins, 'ru')}`,
+            text: `Мы получили ${amount} ${currency}. На кошелёк зачислено: ${coinsText(coins, 'ru')}. ${idWebUrl}/wallet`,
         }),
     },
 }
