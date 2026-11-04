@@ -1,8 +1,9 @@
 import { Inject, Injectable, Logger, type OnApplicationBootstrap, type OnModuleInit } from '@nestjs/common'
 import type { ConfigType } from '@nestjs/config'
 import { sql } from 'drizzle-orm'
-import { fromDrizzle, PgBoss } from 'pg-boss'
+import { fromDrizzle, type JobWithMetadata, PgBoss } from 'pg-boss'
 import { PG_BOSS } from '../common/jobs/jobs.module.js'
+import { Metrics } from '../common/metrics/metrics.js'
 import { mailConfig } from '../config/config.js'
 import type { Tx } from '../db/types.js'
 import { IdClient } from '../users/id-client.js'
@@ -35,6 +36,7 @@ export type EmailJob =
 @Injectable()
 export class EmailJobs implements OnModuleInit, OnApplicationBootstrap {
     private readonly logger = new Logger('EmailJobs')
+    private readonly failures
 
     constructor(
         @Inject(PG_BOSS) private readonly boss: PgBoss,
@@ -42,7 +44,16 @@ export class EmailJobs implements OnModuleInit, OnApplicationBootstrap {
         private readonly users: IdClient,
         private readonly transport: MailTransport,
         private readonly deliveries: Deliveries,
-    ) {}
+        metrics: Metrics,
+    ) {
+        this.failures = metrics.counter({
+            name: 'emails_failed_total',
+            help: 'Email jobs failed for good (their last retry failed too), by template.',
+            labelNames: [
+                'template',
+            ],
+        })
+    }
 
     async onModuleInit() {
         await this.boss.createQueue(EMAIL_QUEUE, {
@@ -54,13 +65,25 @@ export class EmailJobs implements OnModuleInit, OnApplicationBootstrap {
     }
 
     async onApplicationBootstrap() {
-        await this.boss.work<EmailJob>(
+        await this.boss.work(
             EMAIL_QUEUE,
             {
                 pollingIntervalSeconds: 2,
+                // retryLimit of the job: whether this attempt is its last.
+                includeMetadata: true,
             },
-            async ([job]) => {
-                if (job) await this.send(job.data)
+            async ([job]: JobWithMetadata<EmailJob>[]) => {
+                if (!job) return
+                try {
+                    await this.send(job.data)
+                } catch (error) {
+                    // pg-boss retries while retryCount < retryLimit, then fails the job for good.
+                    if (job.retryCount >= job.retryLimit)
+                        this.failures.inc({
+                            template: job.data.template,
+                        })
+                    throw error
+                }
             },
         )
     }
