@@ -28,11 +28,12 @@ export type EmailJob =
           currency: string
       }
 
-/** The `template` label of emails_failed_total. */
-const TEMPLATES = [
-    'welcome',
-    'receipt',
-] as const satisfies readonly EmailJob['template'][]
+/** The `template` label of emails_failed_total. A record: a new template that is left out does not compile. */
+const TEMPLATE_LABELS: Record<EmailJob['template'], true> = {
+    welcome: true,
+    receipt: true,
+}
+const TEMPLATES = Object.keys(TEMPLATE_LABELS) as EmailJob['template'][]
 
 /**
  * Emails caused by events, sent outside the event's transaction with retries
