@@ -28,6 +28,12 @@ export type EmailJob =
           currency: string
       }
 
+/** The `template` label of emails_failed_total. */
+const TEMPLATES = [
+    'welcome',
+    'receipt',
+] as const satisfies readonly EmailJob['template'][]
+
 /**
  * Emails caused by events, sent outside the event's transaction with retries
  * (pg-boss): the consumer only queues the job. The address and language come
@@ -53,6 +59,14 @@ export class EmailJobs implements OnModuleInit, OnApplicationBootstrap {
                 'template',
             ],
         })
+        // Every series from the start, so a first failure is an increase Prometheus can see.
+        for (const template of TEMPLATES)
+            this.failures.inc(
+                {
+                    template,
+                },
+                0,
+            )
     }
 
     async onModuleInit() {
@@ -74,11 +88,13 @@ export class EmailJobs implements OnModuleInit, OnApplicationBootstrap {
             },
             async ([job]: JobWithMetadata<EmailJob>[]) => {
                 if (!job) return
+                // pg-boss retries while retryCount < retryLimit, then fails the job for good.
+                const lastAttempt = job.retryCount >= job.retryLimit
                 try {
-                    await this.send(job.data)
+                    await this.send(job.data, lastAttempt)
                 } catch (error) {
-                    // pg-boss retries while retryCount < retryLimit, then fails the job for good.
-                    if (job.retryCount >= job.retryLimit)
+                    // Not counted: a last attempt that pg-boss expires (expireInSeconds) never gets here.
+                    if (lastAttempt)
                         this.failures.inc({
                             template: job.data.template,
                         })
@@ -96,7 +112,7 @@ export class EmailJobs implements OnModuleInit, OnApplicationBootstrap {
         })
     }
 
-    async send(job: EmailJob) {
+    async send(job: EmailJob, lastAttempt = false) {
         if (await this.deliveries.alreadyAccepted(job.key)) return
         const user = await this.users.recipient(job.userId)
         if (!user || user.status !== 'active') {
@@ -127,7 +143,9 @@ export class EmailJobs implements OnModuleInit, OnApplicationBootstrap {
                     key: job.key,
                     err: reason,
                 },
-                'Email not accepted, pg-boss retries',
+                lastAttempt
+                    ? 'Email not accepted on the last attempt, pg-boss fails the job'
+                    : 'Email not accepted, pg-boss retries',
             )
             throw new Error(reason)
         }
