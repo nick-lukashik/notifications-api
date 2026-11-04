@@ -32,8 +32,8 @@ export const envSchema = baseEnvSchema
             ])
             .default('smtp'),
         SMTP_URL: z.string().optional(),
-        /** Resend sends for mail.nick-lukashik.com (infra/terraform/cloudflare, the resend records). */
-        MAIL_FROM: z.string().min(3).default('nick-lukashik <no-reply@mail.nick-lukashik.com>'),
+        /** Resend sends for nick-lukashik.com (infra/terraform/cloudflare, the resend records). */
+        MAIL_FROM: z.string().min(3).default('nick-lukashik <no-reply@nick-lukashik.com>'),
         /** Links in emails. */
         ID_WEB_URL: z.url().default('https://id.nick-lukashik.com'),
     })
