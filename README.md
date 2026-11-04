@@ -7,13 +7,13 @@ Notifications of the nick-lukashik platform:
 
 Built from [`nest-example`](https://github.com/nick-lukashik/nest-example): Postgres, RabbitMQ inbox, pg-boss for emails with retries. Design: [`.github/docs/identity.md`](https://github.com/nick-lukashik/.github/blob/master/docs/identity.md). No public route.
 
-## API (`/api/v1`)
+## API
 
-| Route                                                                         | Who                   | What                                                                                              |
-| ----------------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------- |
-| `POST /internal/auth-codes` `{ challengeId, email, code, locale, expiresAt }` | id-api, service token | Sends the code now. `{ status: accepted \| failed }`. Once per challenge, never after `expiresAt` |
-| `GET /me/notifications?limit&cursor`                                          | access token          | The caller's inbox, newest first, with `unreadCount`                                              |
-| `POST /me/notifications/:id/read`, `POST /me/notifications/read-all`          | access token          | Mark as read; someone else's entry is 404                                                         |
+| Route                                                                                | Who                   | What                                                                                              |
+| ------------------------------------------------------------------------------------ | --------------------- | ------------------------------------------------------------------------------------------------- |
+| `POST /api/v1/internal/auth-codes` `{ challengeId, email, code, locale, expiresAt }` | id-api, service token | Sends the code now. `{ status: accepted \| failed }`. Once per challenge, never after `expiresAt` |
+| `GET /api/v1/me/notifications?limit&cursor`                                          | access token          | The caller's inbox, newest first, with `unreadCount`                                              |
+| `POST /api/v1/me/notifications/:id/read`, `POST /api/v1/me/notifications/read-all`   | access token          | Mark as read; someone else's entry is 404                                                         |
 
 ## Events consumed (queue `notifications-api.events`)
 
