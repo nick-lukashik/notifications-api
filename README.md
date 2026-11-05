@@ -28,7 +28,7 @@ Email jobs (pg-boss `notifications.email`, 8 retries with backoff) read the addr
 ## Privacy
 
 - **Not stored and not logged:** the code, the recipient address or the body.
-- **`deliveries`:** keeps only the idempotency key (`auth-code:<challengeId>`, `welcome:<userId>`, `receipt:<paymentId>`), the template and the status.
+- **`deliveries`:** keeps only the idempotency key (`auth-code:<challengeId>`, `welcome:<userId>`, `receipt:<paymentId>`), the template and the status. A record goes 90 days after its last attempt: an hourly pass on every replica (`src/mail/delivery-retention.ts`), in batches that each commit by themselves.
 - **Provider errors:** addresses in them are replaced with `<address>`.
 
 ## Commands
