@@ -40,4 +40,5 @@ pnpm env:local     # then fill the two tokens, the same as in id-api's .env
 pnpm db:migrate
 pnpm dev           # http://localhost:4200
 pnpm verify
+pnpm messaging:replay-dlq notifications-api.events --limit 100   # dead letters back to their queue, after the cause is fixed
 ```
