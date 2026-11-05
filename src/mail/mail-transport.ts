@@ -52,17 +52,12 @@ export class SmtpTransport extends MailTransport implements OnApplicationShutdow
     }
 }
 
-/** No provider (local runs, stage without mail): logs only the subject, never the body or the address. */
+/** No provider (local runs, stage without mail): logs that an email was dropped, nothing of it. A sign-in code is in the subject. */
 @Injectable()
 export class LogTransport extends MailTransport {
     private readonly logger = new Logger('Mail')
 
-    async send(message: MailMessage) {
-        this.logger.log(
-            {
-                subject: message.subject,
-            },
-            'Email not sent: MAIL_TRANSPORT=log',
-        )
+    async send(_message: MailMessage) {
+        this.logger.log('Email not sent: MAIL_TRANSPORT=log')
     }
 }
