@@ -6,6 +6,7 @@ import { EventsConsumer } from './events/events.consumer.js'
 import { MeNotificationsController } from './inbox/me.controller.js'
 import { NotificationsService } from './inbox/notifications.service.js'
 import { Deliveries } from './mail/deliveries.js'
+import { DeliveryRetention } from './mail/delivery-retention.js'
 import { EmailJobs } from './mail/email.job.js'
 import { LogTransport, MailTransport, SmtpTransport } from './mail/mail-transport.js'
 import { IdClient } from './users/id-client.js'
@@ -25,6 +26,7 @@ import { IdClient } from './users/id-client.js'
                 config.transport === 'smtp' ? new SmtpTransport(config) : new LogTransport(),
         },
         Deliveries,
+        DeliveryRetention,
         EmailJobs,
         EventsConsumer,
         IdClient,
