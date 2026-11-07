@@ -1,6 +1,7 @@
 import { type BeforeApplicationShutdown, Inject, Injectable, Logger, type OnApplicationBootstrap } from '@nestjs/common'
 import { inArray, lt, sql } from 'drizzle-orm'
 import { DB } from '../common/database/database.js'
+import { safeErrorMessage } from '../common/logging/safe-error.js'
 import { deliveries } from '../db/schema.js'
 import type { Db } from '../db/types.js'
 
@@ -104,7 +105,7 @@ export class DeliveryRetention implements OnApplicationBootstrap, BeforeApplicat
         } catch (error) {
             this.logger.error(
                 {
-                    err: (error as Error).message,
+                    err: safeErrorMessage(error),
                 },
                 'Retention pass failed',
             )
