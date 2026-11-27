@@ -1,6 +1,7 @@
 # notifications-api
 
 Notifications of the nick-lukashik platform:
+
 - sign-in codes by email (a synchronous call from id-api);
 - emails caused by events: welcome, payment receipt;
 - the in-app inbox shown on id-web.
